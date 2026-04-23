@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" ng-app="litixAuth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in | Litix</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+            --bg: #0b0f17;
+            --panel: #0f1420;
+            --border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f5f6fa;
+            --text-secondary: rgba(245, 246, 250, 0.7);
+            --accent: #0a84ff;
+            --input: #111828;
+            --shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+            --glow: rgba(10, 132, 255, 0.14);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 16px;
+            background: radial-gradient(circle at 20% 20%, rgba(10, 132, 255, 0.12), transparent 40%),
+            radial-gradient(circle at 80% 0%, rgba(99, 110, 255, 0.08), transparent 45%),
+            linear-gradient(160deg, #080c13, var(--bg));
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+        }
+
+        .login-shell {
+            position: relative;
+            width: min(480px, 94vw);
+            padding: 52px 42px 42px;
+            border-radius: 30px;
+            background: linear-gradient(180deg, rgba(17, 23, 34, 0.9), rgba(13, 17, 27, 0.95));
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(2px);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            letter-spacing: 0.08em;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+        }
+
+        .brand-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 6px rgba(10, 132, 255, 0.18);
+        }
+
+        .eyebrow {
+            color: var(--text-secondary);
+            letter-spacing: 0.2em;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin: 10px 0 8px;
+            letter-spacing: -0.02em;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.03em;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(10, 132, 255, 0.7);
+            box-shadow: 0 0 0 6px rgba(10, 132, 255, 0.14);
+            transform: translateY(-1px);
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group.invalid input {
+            border-color: #ff5b5b;
+            box-shadow: 0 0 0 6px rgba(255, 91, 91, 0.18);
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .remember input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            accent-color: var(--accent);
+        }
+
+        button[type="submit"] {
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(180deg, #0f8bff, #0a6fdd);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            box-shadow: 0 20px 38px rgba(10, 132, 255, 0.28);
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 24px 48px rgba(10, 132, 255, 0.32);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(1px);
+        }
+
+        .extra-links {
+            margin-top: 22px;
+            color: var(--text-secondary);
+            font-size: 0.96rem;
+            line-height: 1.6;
+        }
+
+        .extra-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: color 0.18s ease, border-color 0.18s ease;
+        }
+
+        .extra-links a:hover {
+            color: var(--accent);
+            border-color: rgba(10, 132, 255, 0.4);
+        }
+
+        .playbook {
+            position: absolute;
+            inset: 26px;
+            pointer-events: none;
+            opacity: 0.4;
+            background:
+                    radial-gradient(circle at 18% 32%, var(--glow), transparent 28%),
+                    radial-gradient(circle at 76% 64%, rgba(10, 132, 255, 0.1), transparent 32%),
+                    repeating-linear-gradient(0deg, transparent 0, transparent 60px, var(--field, rgba(255,255,255,0.03)) 60px, var(--field, rgba(255,255,255,0.03)) 62px),
+                    repeating-linear-gradient(90deg, transparent 0, transparent 60px, var(--field, rgba(255,255,255,0.03)) 60px, var(--field, rgba(255,255,255,0.03)) 62px);
+        }
+
+        .route {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.35));
+            border-radius: 999px;
+            transform-origin: top;
+            filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+        }
+
+        .route::after {
+            content: "";
+            position: absolute;
+            left: -10px;
+            top: -6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.05);
+        }
+
+        .route.os::after {
+            border-radius: 6px;
+            content: "O";
+            display: grid;
+            place-items: center;
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .route.xs::after {
+            content: "X";
+            display: grid;
+            place-items: center;
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        .hud {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 8px 0 22px;
+        }
+
+        .hud-card {
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .hud-card .label {
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .hud-card .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .hud-card .hint {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .status-row {
+            margin-top: 18px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 6px rgba(10, 132, 255, 0.18);
+        }
+
+        @media (max-width: 520px) {
+            .login-shell {
+                padding: 36px 22px 30px;
+                border-radius: 22px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .remember {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body ng-controller="LoginController as vm">
+<div class="playbook" aria-hidden="true">
+    <div class="route" ng-repeat="route in vm.routes" ng-class="route.variant" ng-style="vm.routeStyle(route)"></div>
+</div>
+<main class="login-shell" role="main">
+    <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Litix</span>
+    </div>
+    <div class="hud">
+        <div class="hud-card" ng-repeat="metric in vm.metrics">
+            <p class="label">{{metric.label}}</p>
+            <p class="value">{{metric.value}}</p>
+            <p class="hint">{{metric.hint}}</p>
+        </div>
+    </div>
+    <p class="eyebrow">Sign in</p>
+    <h1>Welcome back</h1>
+    <p class="subtitle">Access your Litix workspace with your credentials.</p>
+    <form name="loginForm" th:action="@{/login}" method="post" ng-submit="vm.handleSubmit($event)" novalidate>
+        <div class="input-group" ng-class="{'invalid': vm.submitted && loginForm.username.$invalid}">
+            <label for="username">Email or username</label>
+            <input id="username" name="username" type="text" autocomplete="username" placeholder="you@litix.com" ng-model="vm.form.username" required>
+        </div>
+        <div class="input-group" ng-class="{'invalid': vm.submitted && loginForm.password.$invalid}">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" ng-model="vm.form.password" required>
+        </div>
+        <div class="actions">
+            <label class="remember">
+                <input type="checkbox" name="remember-me" ng-model="vm.form.remember">
+                <span>Keep me signed in</span>
+            </label>
+            <button type="submit">Continue</button>
+        </div>
+        <div class="status-row" ng-if="vm.status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>{{vm.status}}</span>
+        </div>
+    </form>
+    <div class="extra-links">
+        <p><a href="#">Forgot your password?</a></p>
+        <p>New to Litix? <a th:href="@{/register}">Create an account</a></p>
+    </div>
+</main>
+<script>
+    angular.module('litixAuth', [])
+        .controller('LoginController', function() {
+            const vm = this;
+            vm.form = {};
+            vm.metrics = [
+                { label: 'Signal', value: 'Live', hint: 'Network locked' },
+                { label: 'Latency', value: '24ms', hint: 'Edge route' },
+                { label: 'Uptime', value: '99.9%', hint: 'SLA' }
+            ];
+            vm.routes = [
+                { height: 186, left: '12%', top: '12%', rotate: 18, variant: 'os' },
+                { height: 160, left: '32%', top: '50%', rotate: -12, variant: 'xs' },
+                { height: 220, left: '58%', top: '18%', rotate: 9, variant: 'os' },
+                { height: 140, left: '78%', top: '48%', rotate: -20, variant: 'xs' },
+            ];
+
+            vm.routeStyle = function(route) {
+                return {
+                    height: route.height + 'px',
+                    left: route.left,
+                    top: route.top,
+                    transform: 'rotate(' + route.rotate + 'deg)'
+                };
+            };
+
+            vm.handleSubmit = function(event) {
+                vm.submitted = true;
+
+                if (event.target.checkValidity && !event.target.checkValidity()) {
+                    event.preventDefault();
+                    vm.status = 'Please complete the required fields.';
+                    return;
+                }
+
+                vm.status = 'Checking credentials and signing you in...';
+            };
+        });
+</script>
+</body>
+</html>

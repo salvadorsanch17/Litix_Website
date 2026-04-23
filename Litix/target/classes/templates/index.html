@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" ng-app="litixSite">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Litix</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+      --bg: #070b13;
+      --panel: #0d1320;
+      --border: rgba(255, 255, 255, 0.06);
+      --text-primary: #f5f6fa;
+      --text-secondary: rgba(245, 246, 250, 0.7);
+      --accent: #0a84ff;
+      --glow: rgba(10, 132, 255, 0.14);
+      --field: rgba(255, 255, 255, 0.03);
+      --route: rgba(255, 255, 255, 0.35);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 16% 18%, rgba(10, 132, 255, 0.12), transparent 40%),
+      radial-gradient(circle at 82% 4%, rgba(90, 115, 255, 0.08), transparent 45%),
+      linear-gradient(160deg, #060910, var(--bg));
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    .playbook {
+      position: fixed;
+      inset: 40px;
+      pointer-events: none;
+      opacity: 0.35;
+      background:
+              radial-gradient(circle at 18% 32%, var(--glow), transparent 28%),
+              radial-gradient(circle at 76% 64%, rgba(10, 132, 255, 0.1), transparent 32%),
+              repeating-linear-gradient(0deg, transparent 0, transparent 60px, var(--field) 60px, var(--field) 62px),
+              repeating-linear-gradient(90deg, transparent 0, transparent 60px, var(--field) 60px, var(--field) 62px);
+    }
+
+    .route {
+      position: absolute;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--route));
+      border-radius: 999px;
+      transform-origin: top;
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+    }
+
+    .route::after {
+      content: "";
+      position: absolute;
+      left: -10px;
+      top: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--route);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.05);
+    }
+
+    .route.os::after {
+      border-radius: 6px;
+      content: "O";
+      display: grid;
+      place-items: center;
+      color: var(--route);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .route.xs::after {
+      content: "X";
+      display: grid;
+      place-items: center;
+      color: var(--route);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+
+    .menu-wrapper {
+      position: fixed;
+      top: 22px;
+      left: 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 2;
+    }
+
+    .menu-toggle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #0f8bff, #0a6fdd);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 14px 32px rgba(10, 132, 255, 0.32);
+      color: #fff;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .menu-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(10, 132, 255, 0.38);
+    }
+
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-12px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .menu a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(15, 20, 32, 0.9);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+    }
+
+    .menu a:hover {
+      border-color: rgba(10, 132, 255, 0.4);
+      background: rgba(17, 24, 40, 0.95);
+      transform: translateY(-1px);
+    }
+
+    .menu-open .menu {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .hero {
+      text-align: center;
+      position: relative;
+      padding: 80px 20px;
+      z-index: 1;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 20% auto auto 50%;
+      width: 320px;
+      height: 320px;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, var(--glow), transparent 65%);
+      filter: blur(18px);
+      z-index: -1;
+      opacity: 0.85;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 5rem);
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin-top: 18px;
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.01em;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(15, 20, 32, 0.7);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      letter-spacing: 0.04em;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 540px) {
+      .menu-wrapper {
+        left: 14px;
+        top: 14px;
+      }
+
+      .menu {
+        gap: 10px;
+      }
+
+      .menu a {
+        padding: 10px 14px;
+        font-size: 0.95rem;
+      }
+
+      .playbook {
+        inset: 24px;
+      }
+    }
+  </style>
+</head>
+<body ng-controller="HomeController as vm" ng-class="{'menu-open': vm.menuOpen}">
+<div class="playbook" aria-hidden="true">
+  <div class="route" ng-repeat="route in vm.routes" ng-class="route.variant" ng-style="vm.routeStyle(route)"></div>
+</div>
+
+<div class="menu-wrapper">
+  <button class="menu-toggle" ng-click="vm.toggleMenu()" ng-attr-aria-expanded="{{vm.menuOpen}}" aria-controls="litix-menu" aria-label="Open Litix menu">
+    •
+  </button>
+  <nav id="litix-menu" class="menu" aria-label="Primary">
+    <a th:href="@{/login}">Login</a>
+    <a th:href="@{/register}">Register</a>
+    <a ng-repeat="link in vm.links" ng-href="{{link.href}}">{{link.label}}</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <span class="pill">Litix</span>
+  <h1>{{vm.title}}</h1>
+  <p>{{vm.subtitle}}</p>
+</section>
+<script>
+  angular.module('litixSite', [])
+    .controller('HomeController', function() {
+      const vm = this;
+
+      vm.title = 'Litix';
+      vm.subtitle = 'The tech playbook for trades, teams, and game-day decisions.';
+      vm.menuOpen = false;
+      vm.links = [
+        { label: 'Trade calculator', href: '/trade-calculator' },
+        { label: 'Team manager', href: '/team-manager' },
+      ];
+
+      vm.routes = [
+        { height: 186, left: '12%', top: '22%', rotate: 18, variant: 'os' },
+        { height: 160, left: '30%', top: '48%', rotate: -12, variant: 'xs' },
+        { height: 220, left: '54%', top: '24%', rotate: 9, variant: 'os' },
+        { height: 140, left: '76%', top: '52%', rotate: -20, variant: 'xs' },
+      ];
+
+      vm.toggleMenu = function() {
+        vm.menuOpen = !vm.menuOpen;
+      };
+
+      vm.routeStyle = function(route) {
+        return {
+          height: route.height + 'px',
+          left: route.left,
+          top: route.top,
+          transform: 'rotate(' + route.rotate + 'deg)'
+        };
+      };
+    });
+</script>
+</body>
+</html>
